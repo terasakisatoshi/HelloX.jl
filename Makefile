@@ -1,6 +1,4 @@
-.PHONY: all, run, clean
-
-all: run
+.PHONY: run, clean
 
 build: src/HelloX.jl
 	julia -e 'using Pkg; Pkg.add(PackageSpec(url="https://github.com/KristofferC/PackageCompilerX.jl.git",rev="master"))'
