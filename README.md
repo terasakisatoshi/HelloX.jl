@@ -155,3 +155,102 @@ Hello, World from Example.jl
 ```
 
 - Congratulation! You've solved two-language problem.
+
+# Appendix
+
+- In this chapter, we would like test out our binary runs on ARM devices e.g. Raspberry Pi3.
+- Although Julia provides 32-bit (ARMv7-a hard float), its [tiers is 2](https://julialang.org/downloads/), that is:
+> Tier 2: Julia is guaranteed to build from source using the default build options, but may or may not pass all tests. Official binaries are available on a case-by-case basis.
+>
+>(Taken fromCurrently supported platforms)
+
+- This means some Julia Packages do not support/consider for ARM environment devices. PacakgeCompiler.jl and PackageCompilerX.jl are not exception to this. If you like to test out `HelloX.jl` on Raspberry Pi3, we need apply a patch for our purpose.
+
+
+## Modify Code
+
+- In this section, we would like modify a source code to deal with Raspberry Pi3 matters.
+- The following snippet code is taken from https://github.com/JuliaComputing/PackageCompilerX.jl/blob/master/src/PackageCompilerX.jl:
+
+```julia:PacakgeCompilerX.jl
+const NATIVE_CPU_TARGET = "native"
+const APP_CPU_TARGET = "generic;sandybridge,-xsaveopt,clone_all;haswell,-rdrnd,base(1)"
+
+current_process_sysimage_path() = unsafe_string(Base.JLOptions().image_file)
+
+all_stdlibs() = readdir(Sys.STDLIB)
+
+yesno(b::Bool) = b ? "yes" : "no"
+bitflag() = Int == Int32 ? `-m32` : `-m64`
+march() = (Int == Int32 ? `-march=pentium4` : ``)
+```
+
+- Since gcc command for Raspberry Pi3 does not have `-m32` option, we also need extract code depends os `bitflag()`.
+- Replace `APP_CPU_CONSTANT` with `APP_CPU_TARGET = "generic;cortex-a53"`
+  - I'm not sure it is correct, but it works on my environment
+- Replace `-march=pentium4` with `-march=armv7-a`
+
+- The following snippet should work for our purpose.
+
+```
+const NATIVE_CPU_TARGET = "native"
+const APP_CPU_TARGET = "generic;cortex-a53"
+
+current_process_sysimage_path() = unsafe_string(Base.JLOptions().image_file)
+
+all_stdlibs() = readdir(Sys.STDLIB)
+
+yesno(b::Bool) = b ? "yes" : "no"
+march() = (Int == Int32 ? `-march=armv7-a` : ``)
+```
+
+- See [my arm branch from PacakgeCompilerX.jl project](https://github.com/terasakisatoshi/PackageCompilerX.jl/tree/arm) which is applied by a patch above.
+
+## Let's test out
+
+- If you do not have a Raspberry Pi3, you can run environment on Docker.
+- We've used Docker image terasakisatoshi/jlcross:rpi3-v1.3.1
+  - See DockerHub https://hub.docker.com/r/terasakisatoshi/jlcross
+  - Dockerfile can be found at https://github.com/Julia-Embedded/jlcross
+- The follwing command build binary for Raspberry Pi3, it takes a few hours to get it.
+
+```shell
+# Script for Raspberry Pi 3
+# Run make clean to reset host environment
+make clean
+# Check Julia version
+docker run --rm -it --name versioncheck -v ${PWD}:/work -w /work terasakisatoshi/jlcross:rpi3-v1.3.1 julia -e "using InteractiveUtils; versioninfo()"
+# Build executable which will be stored under a directory named `build`
+docker run --rm -it --name buildrpi3 -v ${PWD}:/work -w /work terasakisatoshi/jlcross:rpi3-v1.3.1 make rpi3
+# Test to run binary on other environments that does not have Julia environment
+docker run --rm -it -v ${PWD}:/work -w /work FROM balenalib/raspberrypi3:buster-run-20191106 build/bin/HelloX
+```
+
+```console
+20191106 build/bin/HelloX
+ARGS = String[]
+Base.PROGRAM_FILE = "/work/build/bin/HelloX"
+Hello World from HelloX.jl
+Hello, World from Example.jl
+           ┌────────────────────────────────────────┐
+         1 │⠀⠀⠀⠀⠀⠀⢀⠖⢹⠉⢢⠀⠀⢀⠞⠉⠉⢢⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠞⠉⠀⠀⢀│ cos(x)
+           │⠀⠀⠀⠀⠀⢠⠊⠀⢸⠀⠀⠳⣠⠊⠀⠀⠀⠀⠣⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠃⠀⢀⡠⠒⠁│ sin(x)
+           │⠀⠀⠀⠀⢀⠇⠀⠀⢸⠀⠀⢠⢷⠀⠀⠀⠀⠀⠀⢱⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⢇⡠⠒⠁⠀⠀⠀│ line
+           │⠀⠀⠀⠀⡜⠀⠀⠀⢸⠀⠀⡜⠀⢧⠀⠀⠀⠀⠀⠀⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡠⡞⠁⠀⠀⠀⠀⠀⠀│
+           │⠀⠀⠀⢸⠀⠀⠀⠀⢸⠀⢸⠀⠀⠘⡄⠀⠀⠀⠀⠀⠘⡄⠀⠀⠀⠀⠀⢀⡠⠒⠁⡸⠀⠀⠀⠀⠀⠀⠀⠀│
+           │⠀⠀⢀⠇⠀⠀⠀⠀⢸⢀⠇⠀⠀⠀⢱⠀⠀⠀⠀⠀⠀⢱⠀⠀⢀⡠⠒⠁⠀⠀⢠⠃⠀⠀⠀⠀⠀⠀⠀⠀│
+           │⠀⠀⡜⠀⠀⠀⠀⠀⢸⡜⠀⠀⠀⠀⠈⡆⠀⠀⠀⠀⠀⢈⡦⠒⠁⠀⠀⠀⠀⠀⡜⠀⠀⠀⠀⠀⠀⠀⠀⠀│
+   f(x)    │⠤⠤⠧⠤⠤⠤⠤⠤⢼⠧⠤⠤⠤⠤⠤⠼⡤⠤⠤⡤⠴⠥⠼⡤⠤⠤⠤⠤⠤⢴⠥⠤⠤⠤⠤⠤⢤⠤⠤⠤│
+           │⠀⠀⠀⠀⠀⠀⠀⠀⣿⠀⠀⠀⠀⠀⠀⠀⣣⠔⠉⠀⠀⠀⠀⢣⠀⠀⠀⠀⢀⠇⠀⠀⠀⠀⠀⢀⠇⠀⠀⠀│
+           │⠀⠀⠀⠀⠀⠀⠀⡸⢸⠀⠀⠀⠀⡠⠔⠉⠈⡆⠀⠀⠀⠀⠀⠈⡆⠀⠀⠀⡸⠀⠀⠀⠀⠀⠀⡸⠀⠀⠀⠀│
+           │⠀⠀⠀⠀⠀⠀⢀⠇⢸⠀⡠⠔⠉⠀⠀⠀⠀⢱⠀⠀⠀⠀⠀⠀⢱⠀⠀⢠⠃⠀⠀⠀⠀⠀⢠⠃⠀⠀⠀⠀│
+           │⠀⠀⠀⠀⠀⠀⡞⡠⢼⠉⠀⠀⠀⠀⠀⠀⠀⠀⢇⠀⠀⠀⠀⠀⠀⢇⠀⡞⠀⠀⠀⠀⠀⠀⡎⠀⠀⠀⠀⠀│
+           │⠀⠀⠀⠀⡠⡼⠉⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⡆⠀⠀⠀⠀⠀⠘⡾⠀⠀⠀⠀⠀⠀⡸⠀⠀⠀⠀⠀⠀│
+           │⠀⡠⠔⠉⡰⠁⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢄⠀⠀⠀⠀⡜⠙⣄⠀⠀⠀⠀⡜⠁⠀⠀⠀⠀⠀⠀│
+        -1 │⠊⢀⣀⠜⠀⠀⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢦⣀⣀⠜⠀⠀⠈⢦⣀⣠⠜⠀⠀⠀⠀⠀⠀⠀⠀│
+           └────────────────────────────────────────┘
+           -2                                       7
+                               x%
+```
+
+Yes, you're good to go.
