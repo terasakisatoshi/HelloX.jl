@@ -8,4 +8,4 @@ docker run --rm -it --name versioncheck -v ${PWD}:/work -w /work ${JL_AARCH64} j
 # Build executable which will be stored under a directory named `build`
 docker run --rm -it --name buildjetson -v ${PWD}:/work -w /work ${JL_AARCH64} make build
 # Test to run binary on other environments that does not have Julia environment
-docker run --rm -it -v ${PWD}:/work -w /work balenalib/raspberrypi3:buster-run-20191106 build/bin/HelloX
+docker run --rm -it -v ${PWD}:/work -w /work balenalib/jetson-nano:build-20190717 build/bin/HelloX
