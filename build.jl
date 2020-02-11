@@ -1,6 +1,4 @@
-using PackageCompiler
+using PackageCompilerX
 
-create_app(
-    ".", "build", force=true,
-)
+create_app(".", "build", force=true)
 
