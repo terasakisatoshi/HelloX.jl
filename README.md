@@ -258,4 +258,4 @@ Hello, World from Example.jl
                                x%
 ```
 
-Perfect!!! you can reproduce our result via `rpi3.sh` or `aarch64.sh`
+Perfect!!! you can reproduce our result via `rpi3.sh`, `aarch64.sh` or `rpizero.sh`
