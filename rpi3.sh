@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Script for Raspberry Pi 3
 # https://hub.docker.com/layers/julia/library/julia/latest/images/sha256-1bfe9380ebd44f7fd18c3290a71e25f6278faa39c77562e1b18d3e9b119c7732
 #JL_ARMV7=julia@sha256:1bfe9380ebd44f7fd18c3290a71e25f6278faa39c77562e1b18d3e9b119c7732
