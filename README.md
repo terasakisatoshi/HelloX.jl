@@ -1,7 +1,8 @@
 # HelloX.jl
 
-- Hello World Application that will be compiled via [PackageCompilerX.jl](https://github.com/JuliaComputing/PackageCompilerX.jl)
-- PackageCompilerX.jl has a feature that creates "apps" which are a bundle of files including an executable that can be sent and run on other machines without Julia being installed on that machine.
+- Hello World Application that will be compiled via NEW [PackageCompiler.jl](https://github.com/JuliaLang/PackageCompiler.jl)
+  - Since [PackageCompilerX.jl](https://github.com/JuliaLang/PackageCompilerX.jl) has been moved to PackageCompiler.jl, We will call the revised PacakgeCompiler as NEW PackageCompiler.jl
+- NEW PackageCompiler.jl has a feature that creates "apps" which are a bundle of files including an executable that can be sent and run on other machines without Julia being installed on that machine.
 - It will solve two language problem. No need to convert Python to C++.
 
 # Usage
@@ -86,36 +87,46 @@ f(x)    │⠤⠤⠧⠤⠤⠤⠤⠤⢼⠧⠤⠤⠤⠤⠤⠼⡤⠤⠤⡤⠴⠥⠼
 
 ## Compile `HelloX.jl`
 
-- In this section, let's see `PackageCompilerX.jl` will generate a binary that runs on other machines without Julia being installed on that machine.
+- In this section, let's see NEW `PackageCompiler.jl` will generate a binary that runs on other machines without Julia being installed on that machine.
 
 ### Run build script
 
 - `make build` command will compile our Julia package that is `HelloX`. This command is equivalent to:
 
 ```console
-$ julia -e 'using Pkg; Pkg.add(PackageSpec(url="https://github.com/KristofferC/PackageCompilerX.jl.git",rev="master"))'
-$ julia --startup-file=no --project=. -e 'using Pkg; Pkg.instantiate()'
-$ julia build.jl
+$ julia --project=. -e 'using Pkg; Pkg.add(PackageSpec(url="https://github.com/JuliaLang/PackageCompiler.jl",rev="master"))'
+$ julia --project=. -e 'using Pkg; Pkg.instantiate()'
+$ julia --project=. build.jl
 ```
 
 - The output should be
 
 ```console
 $ make build
-julia -e 'using Pkg; Pkg.add(PackageSpec(url="https://github.com/KristofferC/PackageCompilerX.jl.git",rev="master"))'
-  Updating registry at `~/.julia/registries/General`
-  Updating git-repo `https://github.com/JuliaRegistries/General.git`
-  Updating git-repo `https://github.com/KristofferC/PackageCompilerX.jl.git`
-  Updating git-repo `https://github.com/KristofferC/PackageCompilerX.jl.git`
+julia --project=. -e 'using Pkg; Pkg.add(PackageSpec(url="https://github.com/JuliaLang/PackageCompiler.jl",rev="master"))'
+   Cloning git-repo `https://github.com/JuliaLang/PackageCompiler.jl`
+  Updating git-repo `https://github.com/JuliaLang/PackageCompiler.jl`
+  Updating git-repo `https://github.com/JuliaLang/PackageCompiler.jl`
+   Cloning default registries into `~/.julia`
+   Cloning registry from "https://github.com/JuliaRegistries/General.git"
+     Added registry `General` to `~/.julia/registries/General`
  Resolving package versions...
-  Updating `~/.julia/environments/v1.3/Project.toml`
+ Installed Missings ─────────── v0.4.3
+ Installed SortingAlgorithms ── v0.3.1
+ Installed DataAPI ──────────── v1.1.0
+ Installed Example ──────────── v0.5.3
+ Installed OrderedCollections ─ v1.1.0
+ Installed DataStructures ───── v0.17.9
+ Installed StatsBase ────────── v0.32.0
+ Installed UnicodePlots ─────── v1.1.0
+  Updating `/work/Project.toml`
  [no changes]
-  Updating `~/.julia/environments/v1.3/Manifest.toml`
+  Updating `/work/Manifest.toml`
  [no changes]
-julia --startup-file=no --project=. -e 'using Pkg; Pkg.instantiate()'
-julia build.jl
-[ Info: PackageCompilerX: creating base system image (incremental=false)...
-[ Info: PackageCompilerX: creating system image object file, this might take a while...
+julia --project=. -e 'using Pkg; Pkg.instantiate()'
+julia --project=. build.jl
+[ Info: PackageCompiler: creating base system image (incremental=false)...
+[ Info: PackageCompiler: creating system image object file, this might take a while...
 $ ls
 LICENSE       Makefile      Manifest.toml Project.toml  README.md     build         build.jl      src
 ```
@@ -158,55 +169,9 @@ Hello, World from Example.jl
 
 # Appendix
 
-- In this chapter, we would like test out our binary runs on ARM devices e.g. Raspberry Pi3.
-- Although Julia provides 32-bit (ARMv7-a hard float), its [tiers is 2](https://julialang.org/downloads/), that is:
-> Tier 2: Julia is guaranteed to build from source using the default build options, but may or may not pass all tests. Official binaries are available on a case-by-case basis.
->
->(Taken fromCurrently supported platforms)
+- In this chapter, we would like test out NEW PackageCompiler.jl can support ARM devices e.g. Raspberry Pi3 or Jetson nano.
 
-- This means some Julia Packages do not support/consider for ARM environment devices. PacakgeCompiler.jl and PackageCompilerX.jl are not exception to this. If you like to test out `HelloX.jl` on Raspberry Pi3, we need apply a patch for our purpose.
-
-
-## Modify Code
-
-- In this section, we would like modify a source code to deal with Raspberry Pi3 matters.
-- The following snippet code is taken from https://github.com/JuliaComputing/PackageCompilerX.jl/blob/master/src/PackageCompilerX.jl:
-
-```julia:PacakgeCompilerX.jl
-const NATIVE_CPU_TARGET = "native"
-const APP_CPU_TARGET = "generic;sandybridge,-xsaveopt,clone_all;haswell,-rdrnd,base(1)"
-
-current_process_sysimage_path() = unsafe_string(Base.JLOptions().image_file)
-
-all_stdlibs() = readdir(Sys.STDLIB)
-
-yesno(b::Bool) = b ? "yes" : "no"
-bitflag() = Int == Int32 ? `-m32` : `-m64`
-march() = (Int == Int32 ? `-march=pentium4` : ``)
-```
-
-- Since gcc command for Raspberry Pi3 does not have `-m32` option, we also need extract code depends os `bitflag()`.
-- Replace `APP_CPU_CONSTANT` with `APP_CPU_TARGET = "generic;cortex-a53"`
-  - I'm not sure it is correct, but it works on my environment
-- Replace `-march=pentium4` with `-march=armv7-a`
-
-- The following snippet should work for our purpose.
-
-```
-const NATIVE_CPU_TARGET = "native"
-const APP_CPU_TARGET = "generic;cortex-a53"
-
-current_process_sysimage_path() = unsafe_string(Base.JLOptions().image_file)
-
-all_stdlibs() = readdir(Sys.STDLIB)
-
-yesno(b::Bool) = b ? "yes" : "no"
-march() = (Int == Int32 ? `-march=armv7-a` : ``)
-```
-
-- See [my arm branch from PacakgeCompilerX.jl project](https://github.com/terasakisatoshi/PackageCompilerX.jl/tree/arm) which is applied by a patch above.
-
-## Let's test out
+## Let's test out (For Raspberry Pi3)
 
 - If you do not have a Raspberry Pi3, you can run environment on Docker.
 - We've used Docker image terasakisatoshi/jlcross:rpi3-v1.3.1
@@ -215,19 +180,59 @@ march() = (Int == Int32 ? `-march=armv7-a` : ``)
 - The follwing command build binary for Raspberry Pi3, it takes a few hours to get it.
 
 ```shell
+#!/bin/bash
+
 # Script for Raspberry Pi 3
+# https://hub.docker.com/layers/julia/library/julia/latest/images/sha256-1bfe9380ebd44f7fd18c3290a71e25f6278faa39c77562e1b18d3e9b119c7732
+JL_ARMV7=terasakisatoshi/jlcross:rpi3-v1.3.1
 # Run make clean to reset host environment
 make clean
 # Check Julia version
-docker run --rm -it --name versioncheck -v ${PWD}:/work -w /work terasakisatoshi/jlcross:rpi3-v1.3.1 julia -e "using InteractiveUtils; versioninfo()"
+docker run --rm -it --name versioncheck -v ${PWD}:/work -w /work ${JL_ARMV7} julia -e "using InteractiveUtils; versioninfo()"
 # Build executable which will be stored under a directory named `build`
-docker run --rm -it --name buildrpi3 -v ${PWD}:/work -w /work terasakisatoshi/jlcross:rpi3-v1.3.1 make rpi3
+docker run --rm -it --name buildrpi3 -v ${PWD}:/work -w /work ${JL_ARMV7} make build
 # Test to run binary on other environments that does not have Julia environment
 docker run --rm -it -v ${PWD}:/work -w /work balenalib/raspberrypi3:buster-run-20191106 build/bin/HelloX
 ```
 
+- You'll see the following result:
+
 ```console
-20191106 build/bin/HelloX
+rm -rf build
+rm -f HelloX/Manifest.toml
+Julia Version 1.3.1
+Commit 2d57411 (2019-12-30 21:36 UTC)
+Platform Info:
+  OS: Linux (arm-linux-gnueabihf)
+  CPU: Intel(R) Core(TM) i9-9900K CPU @ 3.60GHz
+  WORD_SIZE: 32
+  LIBM: libopenlibm
+  LLVM: libLLVM-6.0.1 (ORCJIT, armv7-a)
+julia --project=. -e 'using Pkg; Pkg.add(PackageSpec(url="https://github.com/JuliaLang/PackageCompiler.jl",rev="master"))'
+   Cloning git-repo `https://github.com/JuliaLang/PackageCompiler.jl`
+  Updating git-repo `https://github.com/JuliaLang/PackageCompiler.jl`
+  Updating git-repo `https://github.com/JuliaLang/PackageCompiler.jl`
+   Cloning default registries into `~/.julia`
+   Cloning registry from "https://github.com/JuliaRegistries/General.git"
+     Added registry `General` to `~/.julia/registries/General`
+ Resolving package versions...
+ Installed Missings ─────────── v0.4.3
+ Installed SortingAlgorithms ── v0.3.1
+ Installed DataAPI ──────────── v1.1.0
+ Installed Example ──────────── v0.5.3
+ Installed OrderedCollections ─ v1.1.0
+ Installed DataStructures ───── v0.17.9
+ Installed StatsBase ────────── v0.32.0
+ Installed UnicodePlots ─────── v1.1.0
+  Updating `/work/Project.toml`
+ [no changes]
+  Updating `/work/Manifest.toml`
+ [no changes]
+julia --project=. -e 'using Pkg; Pkg.instantiate()'
+julia --project=. build.jl
+[ Info: PackageCompiler: creating base system image (incremental=false)...
+[ Info: PackageCompiler: creating system image object file, this might take a while...
+[ Info: PackageCompiler: creating system image object file, this might take a while...
 ARGS = String[]
 Base.PROGRAM_FILE = "/work/build/bin/HelloX"
 Hello World from HelloX.jl
@@ -253,4 +258,4 @@ Hello, World from Example.jl
                                x%
 ```
 
-Yes, you're good to go.
+Perfect!!! you can reproduce our result via `rpi3.sh` or `aarch64.sh`
