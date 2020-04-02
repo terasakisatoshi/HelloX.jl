@@ -6,9 +6,9 @@ build: src/HelloX.jl
 	julia --project=. build.jl
 
 rpizero: src/HelloX.jl
-	julia --project=. -e 'using Pkg; Pkg.add(PackageSpec(url="https://github.com/terasakisatoshi/PackageCompilerX.jl",rev="rpizero"))'
+	julia --project=. -e 'using Pkg; Pkg.add("PackageCompiler")'
 	julia --project=. -e 'using Pkg; Pkg.instantiate()'
-	julia --project=. -e 'using PackageCompilerX; create_app(".", "build", force=true)'
+	julia --project=. -e 'include("build_rpizero.jl")'
 
 run: build
 	build/bin/HelloX
