@@ -6,7 +6,7 @@ build: src/HelloX.jl
 
 rpizero: src/HelloX.jl
 	julia --project=. -e 'using Pkg; Pkg.instantiate()'
-	julia --project=. -e 'include("build_rpizero.jl")'
+	julia --project=. build_rpizero.jl
 
 run: build
 	build/bin/HelloX
