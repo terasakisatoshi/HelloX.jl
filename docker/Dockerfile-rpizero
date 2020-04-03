@@ -1,0 +1,3 @@
+from terasakisatoshi/jlcross:rpizero-v1.4.0
+
+RUN mv /home/pi/julia-v1.4.0/lib/libLLVM* /home/pi/julia-v1.4.0/lib/julia
