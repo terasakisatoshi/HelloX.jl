@@ -1,6 +1,6 @@
 .PHONY: run, clean, rpizero, rpi3
 
-JL_RPIZERO:=terasakisatoshi/jlcross:rpizero-v1.4.0
+JL_RPIZERO=terasakisatoshi/jlcross:rpizero-v1.4.0
 JL_RPI3=terasakisatoshi/jlcross:rpi3-v1.4.0
 
 build: src/HelloX.jl
