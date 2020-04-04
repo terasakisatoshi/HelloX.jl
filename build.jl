@@ -1,4 +1,7 @@
 using PackageCompiler
 
-create_app(".", "build", force=true)
+if !isdefined(Main, :builddir)
+    builddir = "build"
+end
+create_app(".", builddir, force=true)
 
