@@ -29,6 +29,6 @@ run: build
 	build/bin/HelloX
 
 clean:
-	git checkout Project.toml # reset Project toml
 	rm -rf build
 	rm -f HelloX/Manifest.toml
+	
