@@ -16,7 +16,6 @@ rpi3: src/HelloX.jl
 	docker run --rm -it --name testout      -v ${PWD}:/work -w /work ${JL_RPI3} build/bin/HelloX
 rpizero: src/HelloX.jl
 	# Check Julia version
-	docker build -t jlzero -f docker/Dockerfile-rpizero .
 	docker run --rm -it --name versioncheck -v ${PWD}:/work -w /work jlzero julia -e "using InteractiveUtils; versioninfo()"
 	# Build executable which will be stored under a directory named `build`
 	docker run --rm -it --name buildrpizero -v ${PWD}:/work -w /work jlzero julia --project=/work -e 'using Pkg; Pkg.instantiate(); include("/work/build_rpizero.jl")'
