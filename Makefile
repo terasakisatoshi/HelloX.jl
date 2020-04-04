@@ -1,4 +1,4 @@
-.PHONY: run, build, clean, rpizero, rpi3, aarch64
+.PHONY: run, build, clean, rpi3, aarch64, rpizero
 
 JL_RPIZERO=terasakisatoshi/jlcross:rpizero-v1.4.0
 JL_RPI3=terasakisatoshi/jlcross:rpi3-v1.4.0
