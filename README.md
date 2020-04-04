@@ -20,22 +20,7 @@ $ cd HelloX
 
 - In this section, you're supposed to be installed Julia on your PC.
 If you do not have it, please download from https://julialang.org/downloads/
-- We've confirmed our Application works for Julia v1.3.1
-
-```console
-julia -e 'using InteractiveUtils; versioninfo()'
-Julia Version 1.3.1
-Commit 2d5741174c (2019-12-30 21:36 UTC)
-Platform Info:
-  OS: macOS (x86_64-apple-darwin18.6.0)
-  CPU: Intel(R) Core(TM) i9-9900K CPU @ 3.60GHz
-  WORD_SIZE: 64
-  LIBM: libopenlibm
-  LLVM: libLLVM-6.0.1 (ORCJIT, skylake)
-Environment:
-  JULIA_EDITOR = subl
-```
-
+- We've confirmed our Application works for Julia v1.3.1 and v1.4.0
 - Before compiling our package, let's confirm our application named `HelloX` works on your environment.
 
 ```
@@ -94,52 +79,45 @@ f(x)    │⠤⠤⠧⠤⠤⠤⠤⠤⢼⠧⠤⠤⠤⠤⠤⠼⡤⠤⠤⡤⠴⠥⠼
 - `make build` command will compile our Julia package that is `HelloX`. This command is equivalent to:
 
 ```console
-$ julia --project=. -e 'using Pkg; Pkg.add(PackageSpec(url="https://github.com/JuliaLang/PackageCompiler.jl",rev="master"))'
+$ julia --project=. -e 'using Pkg; Pkg.add("PackageCompiler")'
 $ julia --project=. -e 'using Pkg; Pkg.instantiate()'
 $ julia --project=. build.jl
+$ ./build/bin/HelloX
 ```
 
 - The output should be
+- You'll find a `build` directory is generated. It contains build binary exactly what we want.
 
 ```console
 $ make build
-julia --project=. -e 'using Pkg; Pkg.add(PackageSpec(url="https://github.com/JuliaLang/PackageCompiler.jl",rev="master"))'
-   Cloning git-repo `https://github.com/JuliaLang/PackageCompiler.jl`
-  Updating git-repo `https://github.com/JuliaLang/PackageCompiler.jl`
-  Updating git-repo `https://github.com/JuliaLang/PackageCompiler.jl`
-   Cloning default registries into `~/.julia`
-   Cloning registry from "https://github.com/JuliaRegistries/General.git"
-     Added registry `General` to `~/.julia/registries/General`
- Resolving package versions...
- Installed Missings ─────────── v0.4.3
- Installed SortingAlgorithms ── v0.3.1
- Installed DataAPI ──────────── v1.1.0
- Installed Example ──────────── v0.5.3
- Installed OrderedCollections ─ v1.1.0
- Installed DataStructures ───── v0.17.9
- Installed StatsBase ────────── v0.32.0
- Installed UnicodePlots ─────── v1.1.0
-  Updating `/work/Project.toml`
- [no changes]
-  Updating `/work/Manifest.toml`
- [no changes]
-julia --project=. -e 'using Pkg; Pkg.instantiate()'
-julia --project=. build.jl
+docker build -t hellox -f docker/Dockerfile .
+Sending build context to Docker daemon  490.5kB
+Step 1/2 : from julia:1.4.0
+ ---> 7f4dea58d9da
+Step 2/2 : RUN apt-get update && apt-get install -y build-essential
+ ---> Using cache
+ ---> 7f84df917380
+Successfully built 7f84df917380
+Successfully tagged hellox:latest
+# Build executable which will be stored under a directory named `build`
+docker run --rm -it --name buildHelloX -v /Users/terasaki/work/HelloX.jl:/work -w /work hellox julia --project=/work -e 'using Pkg; Pkg.instantiate(); include("/work/build.jl")'
+    Cloning default registries into `~/.julia`
+    Cloning registry from "https://github.com/JuliaRegistries/General.git"
+      Added registry `General` to `~/.julia/registries/General`
+    Cloning git-repo `https://github.com/JuliaLang/PackageCompiler.jl`
+  Installed Missings ─────────── v0.4.3
+  Installed DataAPI ──────────── v1.1.0
+  Installed SortingAlgorithms ── v0.3.1
+  Installed Example ──────────── v0.5.3
+  Installed OrderedCollections ─ v1.1.0
+  Installed DataStructures ───── v0.17.10
+  Installed StatsBase ────────── v0.32.2
+  Installed UnicodePlots ─────── v1.1.0
+┌ Warning: ImageCore has a dependency on Requires.jl, code in `@require` will not be run
+└ @ PackageCompiler ~/.julia/packages/PackageCompiler/J966b/src/PackageCompiler.jl:510
+┌ Warning: VideoIO has a dependency on Requires.jl, code in `@require` will not be run
+└ @ PackageCompiler ~/.julia/packages/PackageCompiler/J966b/src/PackageCompiler.jl:510
 [ Info: PackageCompiler: creating base system image (incremental=false)...
-[ Info: PackageCompiler: creating system image object file, this might take a while...
-$ ls
-LICENSE       Makefile      Manifest.toml Project.toml  README.md     build         build.jl      src
-```
-
-- You'll find a `build` directory is generated. It contains build binary exactly what we want.
-
-### Run built binary
-
-- Let's see what happens running `make run` which is equivalent to `build/bin/HelloX`
-
-```console
-$ make run
-build/bin/HelloX
 ARGS = String[]
 Base.PROGRAM_FILE = "build/bin/HelloX"
 Hello World from HelloX.jl
@@ -174,88 +152,14 @@ Hello, World from Example.jl
 ## Let's test out (For Raspberry Pi3)
 
 - If you do not have a Raspberry Pi3, you can run environment on Docker.
-- We've used Docker image terasakisatoshi/jlcross:rpi3-v1.3.1
+- We've used Docker image `terasakisatoshi/jlcross:rpi3-v1.3.1` and `terasakisatoshi/jlcross:rpi3-v1.4.0`
   - See DockerHub https://hub.docker.com/r/terasakisatoshi/jlcross
   - Dockerfile can be found at https://github.com/Julia-Embedded/jlcross
 - The follwing command build binary for Raspberry Pi3, it takes a few hours to get it.
 
 ```shell
-#!/bin/bash
-
-# Script for Raspberry Pi 3
-# https://hub.docker.com/layers/julia/library/julia/latest/images/sha256-1bfe9380ebd44f7fd18c3290a71e25f6278faa39c77562e1b18d3e9b119c7732
-JL_ARMV7=terasakisatoshi/jlcross:rpi3-v1.3.1
-# Run make clean to reset host environment
-make clean
-# Check Julia version
-docker run --rm -it --name versioncheck -v ${PWD}:/work -w /work ${JL_ARMV7} julia -e "using InteractiveUtils; versioninfo()"
-# Build executable which will be stored under a directory named `build`
-docker run --rm -it --name buildrpi3 -v ${PWD}:/work -w /work ${JL_ARMV7} make build
-# Test to run binary on other environments that does not have Julia environment
-docker run --rm -it -v ${PWD}:/work -w /work balenalib/raspberrypi3:buster-run-20191106 build/bin/HelloX
+$ make rpi3
+$ build_rpi3
 ```
 
-- You'll see the following result:
-
-```console
-rm -rf build
-rm -f HelloX/Manifest.toml
-Julia Version 1.3.1
-Commit 2d57411 (2019-12-30 21:36 UTC)
-Platform Info:
-  OS: Linux (arm-linux-gnueabihf)
-  CPU: Intel(R) Core(TM) i9-9900K CPU @ 3.60GHz
-  WORD_SIZE: 32
-  LIBM: libopenlibm
-  LLVM: libLLVM-6.0.1 (ORCJIT, armv7-a)
-julia --project=. -e 'using Pkg; Pkg.add(PackageSpec(url="https://github.com/JuliaLang/PackageCompiler.jl",rev="master"))'
-   Cloning git-repo `https://github.com/JuliaLang/PackageCompiler.jl`
-  Updating git-repo `https://github.com/JuliaLang/PackageCompiler.jl`
-  Updating git-repo `https://github.com/JuliaLang/PackageCompiler.jl`
-   Cloning default registries into `~/.julia`
-   Cloning registry from "https://github.com/JuliaRegistries/General.git"
-     Added registry `General` to `~/.julia/registries/General`
- Resolving package versions...
- Installed Missings ─────────── v0.4.3
- Installed SortingAlgorithms ── v0.3.1
- Installed DataAPI ──────────── v1.1.0
- Installed Example ──────────── v0.5.3
- Installed OrderedCollections ─ v1.1.0
- Installed DataStructures ───── v0.17.9
- Installed StatsBase ────────── v0.32.0
- Installed UnicodePlots ─────── v1.1.0
-  Updating `/work/Project.toml`
- [no changes]
-  Updating `/work/Manifest.toml`
- [no changes]
-julia --project=. -e 'using Pkg; Pkg.instantiate()'
-julia --project=. build.jl
-[ Info: PackageCompiler: creating base system image (incremental=false)...
-[ Info: PackageCompiler: creating system image object file, this might take a while...
-[ Info: PackageCompiler: creating system image object file, this might take a while...
-ARGS = String[]
-Base.PROGRAM_FILE = "/work/build/bin/HelloX"
-Hello World from HelloX.jl
-Hello, World from Example.jl
-           ┌────────────────────────────────────────┐
-         1 │⠀⠀⠀⠀⠀⠀⢀⠖⢹⠉⢢⠀⠀⢀⠞⠉⠉⢢⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠞⠉⠀⠀⢀│ cos(x)
-           │⠀⠀⠀⠀⠀⢠⠊⠀⢸⠀⠀⠳⣠⠊⠀⠀⠀⠀⠣⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠃⠀⢀⡠⠒⠁│ sin(x)
-           │⠀⠀⠀⠀⢀⠇⠀⠀⢸⠀⠀⢠⢷⠀⠀⠀⠀⠀⠀⢱⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⢇⡠⠒⠁⠀⠀⠀│ line
-           │⠀⠀⠀⠀⡜⠀⠀⠀⢸⠀⠀⡜⠀⢧⠀⠀⠀⠀⠀⠀⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡠⡞⠁⠀⠀⠀⠀⠀⠀│
-           │⠀⠀⠀⢸⠀⠀⠀⠀⢸⠀⢸⠀⠀⠘⡄⠀⠀⠀⠀⠀⠘⡄⠀⠀⠀⠀⠀⢀⡠⠒⠁⡸⠀⠀⠀⠀⠀⠀⠀⠀│
-           │⠀⠀⢀⠇⠀⠀⠀⠀⢸⢀⠇⠀⠀⠀⢱⠀⠀⠀⠀⠀⠀⢱⠀⠀⢀⡠⠒⠁⠀⠀⢠⠃⠀⠀⠀⠀⠀⠀⠀⠀│
-           │⠀⠀⡜⠀⠀⠀⠀⠀⢸⡜⠀⠀⠀⠀⠈⡆⠀⠀⠀⠀⠀⢈⡦⠒⠁⠀⠀⠀⠀⠀⡜⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-   f(x)    │⠤⠤⠧⠤⠤⠤⠤⠤⢼⠧⠤⠤⠤⠤⠤⠼⡤⠤⠤⡤⠴⠥⠼⡤⠤⠤⠤⠤⠤⢴⠥⠤⠤⠤⠤⠤⢤⠤⠤⠤│
-           │⠀⠀⠀⠀⠀⠀⠀⠀⣿⠀⠀⠀⠀⠀⠀⠀⣣⠔⠉⠀⠀⠀⠀⢣⠀⠀⠀⠀⢀⠇⠀⠀⠀⠀⠀⢀⠇⠀⠀⠀│
-           │⠀⠀⠀⠀⠀⠀⠀⡸⢸⠀⠀⠀⠀⡠⠔⠉⠈⡆⠀⠀⠀⠀⠀⠈⡆⠀⠀⠀⡸⠀⠀⠀⠀⠀⠀⡸⠀⠀⠀⠀│
-           │⠀⠀⠀⠀⠀⠀⢀⠇⢸⠀⡠⠔⠉⠀⠀⠀⠀⢱⠀⠀⠀⠀⠀⠀⢱⠀⠀⢠⠃⠀⠀⠀⠀⠀⢠⠃⠀⠀⠀⠀│
-           │⠀⠀⠀⠀⠀⠀⡞⡠⢼⠉⠀⠀⠀⠀⠀⠀⠀⠀⢇⠀⠀⠀⠀⠀⠀⢇⠀⡞⠀⠀⠀⠀⠀⠀⡎⠀⠀⠀⠀⠀│
-           │⠀⠀⠀⠀⡠⡼⠉⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⡆⠀⠀⠀⠀⠀⠘⡾⠀⠀⠀⠀⠀⠀⡸⠀⠀⠀⠀⠀⠀│
-           │⠀⡠⠔⠉⡰⠁⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢄⠀⠀⠀⠀⡜⠙⣄⠀⠀⠀⠀⡜⠁⠀⠀⠀⠀⠀⠀│
-        -1 │⠊⢀⣀⠜⠀⠀⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢦⣀⣀⠜⠀⠀⠈⢦⣀⣠⠜⠀⠀⠀⠀⠀⠀⠀⠀│
-           └────────────────────────────────────────┘
-           -2                                       7
-                               x%
-```
-
-Perfect!!! you can reproduce our result via `rpi3.sh`, `aarch64.sh` or `rpizero.sh`
+- You can reproduce another arch result via `make rpizero` and `make aarch64`
