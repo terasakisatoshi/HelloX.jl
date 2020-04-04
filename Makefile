@@ -1,11 +1,19 @@
 .PHONY: run, clean
 
 JL_RPIZERO:=terasakisatoshi/jlcross:rpizero-v1.4.0
+JL_RPI3=terasakisatoshi/jlcross:rpi3-v1.4.0
 
 build: src/HelloX.jl
 	docker build -t jlx -f docker/Dockerfile .
 	docker run --rm -it --name buildHelloX -v ${PWD}:/work -w /work jlx julia --project=/work -e 'using Pkg; Pkg.instantiate(); include("/work/build.jl")'
 
+rpi3: src/HelloX.jl
+	# Check Julia version
+	docker run --rm -it --name versioncheck -v ${PWD}:/work -w /work ${JL_RPI3} julia -e "using InteractiveUtils; versioninfo()"
+	# Build executable which will be stored under a directory named `build`
+	docker run --rm -it --name buildrpi3    -v ${PWD}:/work -w /work ${JL_RPI3} julia --project=/work -e 'using Pkg; Pkg.instantiate(); include("/work/build.jl")'
+	# Test to run binary on other environments that does not have Julia environment
+	docker run --rm -it --name testout      -v ${PWD}:/work -w /work ${JL_RPI3} build/bin/HelloX
 rpizero: src/HelloX.jl
 	# Check Julia version
 	docker build -t jlzero -f docker/Dockerfile-rpizero .
