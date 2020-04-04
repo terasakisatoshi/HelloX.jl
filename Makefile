@@ -15,7 +15,8 @@ rpi3: src/HelloX.jl
 	docker run --rm -it --name versioncheck_$@ -v ${PWD}:/work -w /work ${JL_RPI3} julia -e "using InteractiveUtils; versioninfo()"
 	# Build executable which will be stored under a directory named `build_$@`
 	docker run --rm -it --name build_$@        -v ${PWD}:/work -w /work ${JL_RPI3} julia --project=/work -e 'using Pkg; Pkg.instantiate(); builddir="build_$@"; include("/work/build.jl")'
-	docker run --rm -it --name testout_$@      -v ${PWD}:/work -w /work ${JL_RPI3} build_$@/bin/HelloX
+	docker build -t hellox_$@_testout -f docker/Dockerfile-$@-testout .
+	docker run --rm -it --name testout_$@      -v ${PWD}:/work -w /work hellox_$@_testout build_$@/bin/HelloX
 
 aarch64: src/HelloX.jl
 	# Check Julia version
