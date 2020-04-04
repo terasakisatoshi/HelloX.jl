@@ -38,5 +38,5 @@ run: build
 	build/bin/HelloX
 
 clean:
-	rm -rf build build_rpi3 build_rpizero
+	rm -rf build build_rpi3 build_aarch64 build_rpizero
 	rm -f HelloX/Manifest.toml
