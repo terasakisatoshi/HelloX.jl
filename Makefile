@@ -16,6 +16,7 @@ rpi3: src/HelloX.jl
 	# Build executable which will be stored under a directory named `build_$@`
 	docker run --rm -it --name build_$@        -v ${PWD}:/work -w /work ${JL_RPI3} julia --project=/work -e 'using Pkg; Pkg.instantiate(); builddir="build_$@"; include("/work/build.jl")'
 	docker build -t hellox_$@_testout -f docker/Dockerfile-$@-testout .
+	# Build executable which will be stored under a directory named `build_$@`
 	docker run --rm -it --name testout_$@      -v ${PWD}:/work -w /work hellox_$@_testout build_$@/bin/HelloX
 
 aarch64: src/HelloX.jl
