@@ -1,8 +1,7 @@
 .PHONY: run, build, clean, rpi3, aarch64, rpizero
 
-JL_RPIZERO=terasakisatoshi/jlcross:rpizero-v1.4.0
 JL_RPI3=terasakisatoshi/jlcross:rpi3-v1.4.0
-JL_AARCH64=julia:1.4.0@sha256:fed785bf1be9b23ec6f3862073ac9099304ed4481101a57e093a04fcab67400d
+JL_RPIZERO=terasakisatoshi/jlcross:rpizero-v1.4.0
 
 build: src/HelloX.jl
 	docker build -t jlx -f docker/Dockerfile .
@@ -21,11 +20,11 @@ rpi3: src/HelloX.jl
 
 aarch64: src/HelloX.jl
 	# Check Julia version
-	docker run --rm -it --name versioncheck_$@ -v ${PWD}:/work -w /work ${JL_RPI3} julia -e "using InteractiveUtils; versioninfo()"
+	docker build -t hellox_$@ -f docker/Dockerfile-$@ .
+	docker run --rm -it --name versioncheck_$@ -v ${PWD}:/work -w /work hellox_$@ julia -e "using InteractiveUtils; versioninfo()"
 	# Build executable which will be stored under a directory named `build_$@`
-	docker run --rm -it --name build_$@        -v ${PWD}:/work -w /work ${JL_RPI3} julia --project=/work -e 'using Pkg; Pkg.instantiate(); builddir="build_$@"; include("/work/build.jl")'
-	# Test to run binary on other environments that does not have Julia environment
-	docker run --rm -it --name testout_$@      -v ${PWD}:/work -w /work ${JL_RPI3} build/bin/HelloX
+	docker run --rm -it --name build_$@        -v ${PWD}:/work -w /work hellox_$@ julia --project=/work -e 'using Pkg; Pkg.instantiate(); builddir="build_$@"; include("/work/build.jl")'
+	docker run --rm -it --name testout_$@      -v ${PWD}:/work -w /work multiarch/ubuntu-core:arm64-xenial build_$@/bin/HelloX
 
 rpizero: src/HelloX.jl
 	# Check Julia version
