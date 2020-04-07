@@ -1,0 +1,2 @@
+FROM julia:1.4@sha256:f115556c990dad0bfc42b9fe6efcf2377dbac7dd88c7c0f4aa02ecd0b722bb07
+RUN apt-get update && apt-get install -y build-essential
