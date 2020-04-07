@@ -1,6 +1,7 @@
 # HelloX.jl
 
-- Drone CI [![Build Status](https://cloud.drone.io/api/badges/terasakisatoshi/HelloX.jl/status.svg)](https://cloud.drone.io/terasakisatoshi/HelloX.jl)
+- Drone CI (arm32, aarch64)[![Build Status](https://cloud.drone.io/api/badges/terasakisatoshi/HelloX.jl/status.svg)](https://cloud.drone.io/terasakisatoshi/HelloX.jl)
+- GitHub Actions ![CI](https://github.com/terasakisatoshi/HelloX.jl/workflows/CI/badge.svg)
 
 - Hello World Application that will be compiled via NEW [PackageCompiler.jl](https://github.com/JuliaLang/PackageCompiler.jl)
   - Since [PackageCompilerX.jl](https://github.com/JuliaLang/PackageCompilerX.jl) has been moved to PackageCompiler.jl, We will call the revised PacakgeCompiler as NEW PackageCompiler.jl
