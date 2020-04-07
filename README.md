@@ -1,5 +1,7 @@
 # HelloX.jl
 
+- Drone CI [![Build Status](https://cloud.drone.io/api/badges/terasakisatoshi/HelloX.jl/status.svg)](https://cloud.drone.io/terasakisatoshi/HelloX.jl)
+
 - Hello World Application that will be compiled via NEW [PackageCompiler.jl](https://github.com/JuliaLang/PackageCompiler.jl)
   - Since [PackageCompilerX.jl](https://github.com/JuliaLang/PackageCompilerX.jl) has been moved to PackageCompiler.jl, We will call the revised PacakgeCompiler as NEW PackageCompiler.jl
 - NEW PackageCompiler.jl has a feature that creates "apps" which are a bundle of files including an executable that can be sent and run on other machines without Julia being installed on that machine.
