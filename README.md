@@ -26,9 +26,9 @@ If you do not have it, please download from https://julialang.org/downloads/
 - We've confirmed our Application works for Julia v1.3.1 and v1.4.0
 - Before compiling our package, let's confirm our application named `HelloX` works on your environment.
 
-```
-$ julia --project=. -e 'using Pkg; Pkg.instantiate()'
-$ julia --project=. -e 'using HelloX; HelloX.julia_main()'
+```console
+$ julia --project=@. -e 'using Pkg; Pkg.instantiate()'
+$ julia --project=@. -e 'using HelloX; HelloX.julia_main()'
 ```
 
 - It will output the following result.
@@ -82,9 +82,8 @@ f(x)    │⠤⠤⠧⠤⠤⠤⠤⠤⢼⠧⠤⠤⠤⠤⠤⠼⡤⠤⠤⡤⠴⠥⠼
 - `make build` command will compile our Julia package that is `HelloX`. This command is equivalent to:
 
 ```console
-$ julia --project=. -e 'using Pkg; Pkg.add("PackageCompiler")'
-$ julia --project=. -e 'using Pkg; Pkg.instantiate()'
-$ julia --project=. build.jl
+$ julia 'using Pkg; Pkg.add("PackageCompiler")'
+$ julia --project=@. -e 'using Pkg; Pkg.instantiate(); include("./build.jl")'
 $ ./build/bin/HelloX
 ```
 

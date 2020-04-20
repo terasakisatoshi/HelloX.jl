@@ -1,2 +1,3 @@
 FROM julia:1.4.0@sha256:fed785bf1be9b23ec6f3862073ac9099304ed4481101a57e093a04fcab67400d
 RUN apt-get update && apt-get install -y build-essential
+RUN julia -e 'using Pkg; Pkg.add("PackageCompiler")'

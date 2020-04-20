@@ -21,5 +21,6 @@ jobs:
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
+      - run: julia -e 'using Pkg; Pkg.add("PackageCompiler")'
       - run: julia --project=@. -e 'using Pkg; Pkg.instantiate(); include("./build.jl")'
       - run: build/bin/HelloX
