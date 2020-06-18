@@ -1,8 +1,7 @@
 def main(ctx):
   pipelines = []
-  for arch in ["arm", "arm64"]:
-    for julia in ["1.4"]:
-      pipelines.append(pipeline(arch, julia))
+  pipelines.append(pipeline("arm64", "1.4"))
+  pipelines.append(pipeline("arm", "1.4.1"))
   return pipelines
 
 def pipeline(arch, julia):
@@ -21,9 +20,7 @@ def pipeline(arch, julia):
         "commands": [
           "apt-get update && apt-get install -y build-essential",
           "julia -e 'using InteractiveUtils; versioninfo()'",
-          "julia -e 'using Pkg; Pkg.add(\"PackageCompiler\")'",
           "julia --project=@. -e 'using Pkg; Pkg.instantiate(); Pkg.build(); include(\"build.jl\")'",
-          "./build/bin/HelloX",
         ],
       },
     ],
