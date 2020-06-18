@@ -20,7 +20,9 @@ def pipeline(arch, julia):
         "commands": [
           "apt-get update && apt-get install -y build-essential",
           "julia -e 'using InteractiveUtils; versioninfo()'",
+          "julia -e 'using Pkg; Pkg.add(\"PackageCompiler\")'",
           "julia --project=@. -e 'using Pkg; Pkg.instantiate(); Pkg.build(); include(\"build.jl\")'",
+          "./build/bin/HelloX",
         ],
       },
     ],
