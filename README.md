@@ -82,7 +82,7 @@ f(x)    │⠤⠤⠧⠤⠤⠤⠤⠤⢼⠧⠤⠤⠤⠤⠤⠼⡤⠤⠤⡤⠴⠥⠼
 - `make build` command will compile our Julia package that is `HelloX`. This command is equivalent to:
 
 ```console
-$ julia 'using Pkg; Pkg.add("PackageCompiler")'
+$ julia -e 'using Pkg; Pkg.add("PackageCompiler")'
 $ julia --project=@. -e 'using Pkg; Pkg.instantiate(); include("./build.jl")'
 $ ./build/bin/HelloX
 ```
